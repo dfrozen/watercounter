@@ -5,7 +5,8 @@ Arduino mini LiquidCrystal_I2C water meter monitor
 The screen for the water meter, saves the measurements in EEPROM. There is a reset mode to "0"
 Based arduino mini atmega 168p 16MHz
 
-# MIT License
+## License 
+MIT License
 
 Copyright (c) 2018 Andrey Kuznetsoff
 
