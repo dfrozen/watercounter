@@ -5,7 +5,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 #define DEBUG            1   // Выдача отладочной информации в COM-порт
-#define RESET            0   // Установка первоначального "0"
+#define RESET            1   // Установка первоначального "0"
 //////////////////////////////////////////////////////////////////////////////////////////////
 // Пины для подключения устройств
 #define BUTTON_PIN       6    //Пин с конпкой
@@ -14,13 +14,13 @@
 #define COUNTERS 2            //Колличество счетчиков в системе
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-unsigned int CounterHighBase[COUNTERS] = {0000,0000};     // Если значение отлично от нуля - то пишем его в качестве базового     
-unsigned int CounterLowBase[COUNTERS]  = {130,80};     // Если значение отлично от нуля - то пишем его в качестве базового
+unsigned int CounterHighBase[COUNTERS] = {00000,00000};     // Если значение отлично от нуля - то пишем его в качестве базового     
+unsigned int CounterLowBase[COUNTERS]  = {180,180};     // Если значение отлично от нуля - то пишем его в качестве базового
 int counterReadDelay  = 0;                          // Текущая задержка считывания счетчика 
                                                     // (нужна для уверенной отработки переключения счетчика) 
 int CounterPin[COUNTERS]         = {COLD_COUNTER_PIN, HOT_COUNTER_PIN};  // Пины 
-int CounterHighAddress[COUNTERS] = {0x30, 0x40};     //Адреса EEPROM для младшего слова (кубометры)  4 байта
-int CounterLowAddress[COUNTERS]  = {0x38, 0x48};     //Адреса EEPROM для младшего слова (литры) 2 байта
+int CounterHighAddress[COUNTERS] = {0x30, 0x3A};     //Адреса EEPROM для младшего слова (кубометры)  4 байта
+int CounterLowAddress[COUNTERS]  = {0x38, 0x42};     //Адреса EEPROM для младшего слова (литры) 2 байта
 char *CounterName[COUNTERS]      = {"Cold :", "Hot  :"};                 // Названия счетчиков для вывода на экран 
 Bounce CounterBouncer[COUNTERS]  = {};               // Формируем для счетчиков Bounce объекты
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -46,10 +46,10 @@ void setup() {
   #endif
    for (int i=0; i<COUNTERS; i++)
   {   
-    pinMode(CounterPin[i], INPUT);                              // Инициализируем пин
+    pinMode(CounterPin[i], INPUT_PULLUP);                              // Инициализируем пин
     digitalWrite(CounterPin[i], HIGH);                          // Включаем подтягивающий резистор
-    CounterBouncer[i].attach(CounterPin[i]);                    // Настраиваем Bouncer
-    CounterBouncer[i].interval(10);                             // и прописываем ему интервал дребезга
+    CounterBouncer[i].attach(CounterPin[i], INPUT_PULLUP);                    // Настраиваем Bouncer
+    CounterBouncer[i].interval(25);                             // и прописываем ему интервал дребезга
   }
 
     lcd.init();                                     // Инициализируем дисплей
@@ -73,7 +73,7 @@ delay (1);
 }
 
 
-  void printPos(byte col, byte row, char* str)
+  void printPos(byte col, byte row, char *str)
   {
     lcd.setCursor(col, row);
     lcd.print(str);
@@ -129,24 +129,19 @@ void readCounter()
     counterReadDelay = 0;
     for (int i=0; i<COUNTERS; i++) 
     {
-      boolean changed = CounterBouncer[i].update();
-      //Serial.println(changed);
-      if ( changed ) {
-        int value = CounterBouncer[i].read();
-        if ( value == LOW) // Если значение датчика стало ЗАМКНУТО, т.е сработал счетчик
-        {
-          #if DEBUG
-            Serial.print("Counter [ "); Serial.print(CounterName[i]); Serial.print("] switched ");
-          #endif
+      CounterBouncer[i].update();
+      if ( CounterBouncer[i].fell()) {
+         
           if (CounterLowBase[i]<990) // если не произошло перехода на кубометры - увеличиваем счетчик литров на 10
           {
             CounterLowBase[i]+=10;  
             printLow(13,i,CounterLowBase[i]);        
             EEPROM.writeInt (CounterLowAddress[i],CounterLowBase[i]);
             #if DEBUG
-               Serial.print("Write to EEPROM "); Serial.print(i,DEC ); Serial.print(" counter. Name "); Serial.println(CounterName[i]); 
+               Serial.print("Write to EEPROM "); Serial.print(i,DEC ); Serial.println(" counter. Name ");  
+               //Serial.println(CounterName[i]); 
                Serial.print(CounterHighAddress[i] ,HEX); Serial.print(" => "); Serial.println(CounterHighBase[i]);
-               Serial.print(CounterLowAddress[i]  ,HEX); Serial.print(" => "); Serial.println(CounterLowBase[i] );
+               Serial.print(CounterLowAddress[i] ,HEX); Serial.print(" => "); Serial.println(CounterLowBase[i] );
           #endif
           }
           else  // иначе, если произошел переход - обнуляем счетчик литров и увеличиваем счетчик кубометров на 1
@@ -158,12 +153,12 @@ void readCounter()
             EEPROM.writeInt( CounterLowAddress[i],  CounterLowBase[i] );
             EEPROM.writeInt( CounterHighAddress[i], CounterHighBase[i]);
             #if DEBUG
-               Serial.print("Write to EEPROM "); Serial.print(i,DEC ); Serial.print(" counter. Name "); Serial.println(CounterName[i]); 
+               Serial.print("Write to EEPROM "); Serial.print(i,DEC ); Serial.println(" counter. Name "); 
+               //Serial.println( CounterName[i] ); 
                Serial.print(CounterHighAddress[i] ,HEX); Serial.print(" => "); Serial.println(CounterHighBase[i]);
-               Serial.print(CounterLowAddress[i]  ,HEX); Serial.print(" => "); Serial.println(CounterLowBase[i] );
+               Serial.print(CounterLowAddress[i] ,HEX); Serial.print(" => "); Serial.println(CounterLowBase[i] );
             #endif
           }  
-        }
       }
     }
   }
