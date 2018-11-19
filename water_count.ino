@@ -14,13 +14,13 @@
 #define COUNTERS 2            //Колличество счетчиков в системе
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-unsigned int CounterHighBase[COUNTERS] = {19999,999};     // Если значение отлично от нуля - то пишем его в качестве базового     
-unsigned int CounterLowBase[COUNTERS]  = {19999,999};     // Если значение отлично от нуля - то пишем его в качестве базового
+unsigned int CounterHighBase[COUNTERS] = {0000,0000};     // Если значение отлично от нуля - то пишем его в качестве базового     
+unsigned int CounterLowBase[COUNTERS]  = {130,80};     // Если значение отлично от нуля - то пишем его в качестве базового
 int counterReadDelay  = 0;                          // Текущая задержка считывания счетчика 
                                                     // (нужна для уверенной отработки переключения счетчика) 
 int CounterPin[COUNTERS]         = {COLD_COUNTER_PIN, HOT_COUNTER_PIN};  // Пины 
-uint32_t CounterHighAddress[COUNTERS] = {0x30, 0x34};     //Адреса EEPROM для младшего слова (кубометры)  4 байта
-uint16_t CounterLowAddress[COUNTERS]  = {0x38, 0x3A};     //Адреса EEPROM для младшего слова (литры) 2 байта
+int CounterHighAddress[COUNTERS] = {0x30, 0x40};     //Адреса EEPROM для младшего слова (кубометры)  4 байта
+int CounterLowAddress[COUNTERS]  = {0x38, 0x48};     //Адреса EEPROM для младшего слова (литры) 2 байта
 char *CounterName[COUNTERS]      = {"Cold :", "Hot  :"};                 // Названия счетчиков для вывода на экран 
 Bounce CounterBouncer[COUNTERS]  = {};               // Формируем для счетчиков Bounce объекты
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -37,6 +37,7 @@ boolean buttonWasUp = true;                       // была ли кнопка 
 /////////////////////////////////////////////////////////////////////////////
 void setup() {
   // put your setup code here, to run once:
+  delay(10);
   #if DEBUG
     Serial.begin(9600);
     Serial.println( "Debug is ON...");
@@ -65,8 +66,10 @@ void setup() {
 }
 void loop() {
   // put your main code here, to run repeatedly:
-delay (10);
-  readCounter();                                    // Читаем и обрабатываем значения счетчиков
+
+delay (1);
+ readCounter();                                    // Читаем и обрабатываем значения счетчиков
+
 }
 
 
@@ -97,51 +100,6 @@ delay (10);
     sprintf(str1,"%0.3u",val);
     lcd.print(str1);
   }
- //////////////////////////////////////////////////////////////////////////////////////////////
-/*   void buttonRead()
-  {
-    boolean buttonIsUp = digitalRead(BUTTON_PIN);
-
-      if (ledEnabled) ledDelayCount++;
- 
-    if (buttonWasUp && !buttonIsUp) 
-    {
-      delay(10);
-      buttonIsUp = digitalRead(BUTTON_PIN);
-      if (!buttonIsUp) 
-      {
-        ledEnabled = !ledEnabled;
-        if (ledEnabled)
-        {
-          lcd.backlight();
-          lcd.display();
-            ledDelayCount = 0;
-        }
-        else
-        {
-          lcd.noDisplay();
-          lcd.noBacklight();
-        }
-      }
-    }
-   
-    // запоминаем последнее состояние кнопки для новой итерации
-    buttonWasUp = buttonIsUp;  
-  }*/
-// Функции для модуля автоотключения LCD 
-
-  //////////////////////////////////////////////////////////////////////////////////////////////
-/*  void lcdAutoOff()
-  {
-    if (ledDelayCount >= LED_DELAY)
-    {
-      ledDelayCount = 0;
-      lcd.noDisplay();
-      lcd.noBacklight();
-      ledEnabled = !ledEnabled;
-    }
-  }*/
-  // Функции для модуля автоотключения LCD 
 //////////////////////////////////////////////////////////////////////////////////////////////
 void countersInit()
 {
@@ -150,9 +108,9 @@ void countersInit()
   {
     #if RESET // Установка значений по умолчанию - пишем его в EEPROM
       EEPROM.writeInt(CounterLowAddress[i], CounterLowBase[i]);
-      EEPROM.writeLong(CounterHighAddress[i], CounterHighBase[i]);
+      EEPROM.writeInt(CounterHighAddress[i], CounterHighBase[i]);
     #endif  
-    CounterHighBase[i] = EEPROM.readLong(CounterHighAddress[i]); // Читаем начальные значения из EEPROM
+    CounterHighBase[i] = EEPROM.readInt(CounterHighAddress[i]); // Читаем начальные значения из EEPROM
     CounterLowBase[i]  = EEPROM.readInt(CounterLowAddress[i]);  // Читаем начальные значения из EEPROM
     #if DEBUG
       Serial.print("Read form EEPROM "); Serial.print(i,DEC ); Serial.print(" counter. Name "); Serial.println(CounterName[i]); 
@@ -166,7 +124,7 @@ void countersInit()
 // Обрабатываются счетчики
 void readCounter()
 {
-  if (counterReadDelay >= 1000) // Если подошло время обработки
+  if (counterReadDelay >= 100) // Если подошло время обработки
   {
     counterReadDelay = 0;
     for (int i=0; i<COUNTERS; i++) 
@@ -198,7 +156,7 @@ void readCounter()
               printHigh(7 ,i ,CounterHighBase[i]);
               printLow(13,i ,CounterLowBase[i] );         
             EEPROM.writeInt( CounterLowAddress[i],  CounterLowBase[i] );
-            EEPROM.writeLong( CounterHighAddress[i], CounterHighBase[i]);
+            EEPROM.writeInt( CounterHighAddress[i], CounterHighBase[i]);
             #if DEBUG
                Serial.print("Write to EEPROM "); Serial.print(i,DEC ); Serial.print(" counter. Name "); Serial.println(CounterName[i]); 
                Serial.print(CounterHighAddress[i] ,HEX); Serial.print(" => "); Serial.println(CounterHighBase[i]);
@@ -212,6 +170,6 @@ void readCounter()
   else //Если время обработки еще не истекло
   {    
     counterReadDelay++;
-    //Serial.println(counterReadDelay); 
+    //println(counterReadDelay); 
   } 
 }
