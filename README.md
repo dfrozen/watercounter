@@ -1,6 +1,9 @@
 # watercounter
 Arduino mini LiquidCrystal_I2C water meter monitor
-
+# warning 
+garanted work with Bounce 2 ver 2.2.0
+## ver 0.04
+Small changes and optimization after tested
 ## ver 0.01
 The screen for the water meter, saves the measurements in EEPROM. There is a reset mode to "0"
 Based arduino mini atmega 168p 16MHz
