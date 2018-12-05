@@ -8,6 +8,10 @@ Small changes and optimization after tested
 The screen for the water meter, saves the measurements in EEPROM. There is a reset mode to "0"
 Based arduino mini atmega 168p 16MHz
 
+##HOW USE
+[RU] Для начальной установки счетчиков необходимо
+
+
 ## License 
 MIT License
 
