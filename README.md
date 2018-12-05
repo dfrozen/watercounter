@@ -10,11 +10,11 @@ Based arduino mini atmega 168p 16MHz
 
 ## HOW USE
 [RU] Для начальной установки счетчиков необходимо
-#define RESET Уствновить в 1
-unsigned int CounterHighBase[COUNTERS] = {00000,00000}; Записать значение Кубометров   {Холодная,Горячая} 
-unsigned int CounterLowBase[COUNTERS]  = {180,180};     Записать значение литров   {Холодная,Горячая} 
+#### define RESET Уствновить в 1
+#### unsigned int CounterHighBase[COUNTERS] = {00000,00000}; Записать значение Кубометров   {Холодная,Горячая} 
+#### unsigned int CounterLowBase[COUNTERS]  = {180,180};     Записать значение литров   {Холодная,Горячая} 
 Загрузить прошивку 
-#define RESET Уствновить в 0
+#### define RESET Уствновить в 0
 Загрузить прошивку 
 
 ## License 
