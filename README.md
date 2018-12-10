@@ -16,6 +16,13 @@ Based arduino mini atmega 168p 16MHz
 Загрузить прошивку 
 #### define RESET Уствновить в 0
 Загрузить прошивку 
+[EN]For the initial installation you need
+#### define RESET Set to 1
+#### unsigned int CounterHighBase [COUNTERS] = {00000,00000}; Record the value of Cubic meters {Cold, Hot}
+#### unsigned int CounterLowBase [COUNTERS] = {180,180}; Record the value of liters {Cold, Hot}
+upload firmware
+#### define RESET Set to 0
+upwnload firmware
 
 ## License 
 MIT License
